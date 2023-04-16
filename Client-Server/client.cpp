@@ -1,17 +1,17 @@
 #include <winsock2.h>
 #include <iostream>
 using namespace std;
-char szServerIPAddr[ 20 ] = "10.132.2.1" ;     // Put here the IP address of the server
+char szServerIPAddr[ 20 ] = "10.0.0.143" ;     // Put here the IP address of the server
 int nServerPort = 5050 ;                    // The server port that will be used by                                            // clients to talk with the server
 
 bool InitWinSock2_0( ) ;
 
 int main( )
 {
-    cout << "Enter the server IP Address: " ;
-    cin >> szServerIPAddr ;
-    cout << "Enter the server port number: " ;
-    cin >> nServerPort ;
+    //cout << "Enter the server IP Address: " ;
+    //cin >> szServerIPAddr ;
+    //cout << "Enter the server port number: " ;
+    //cin >> nServerPort ;
 
     if ( ! InitWinSock2_0( ) )
     {
@@ -52,11 +52,11 @@ int main( )
     }
 
     char szBuffer[ 1024 ] = "" ;
-
+    cout << "Use Ctrl + C to end chat" << endl;
     while ( strcmp( szBuffer, "QUIT" ) != 0 )
     {
-        cout << "Enter the string to send (QUIT) to stop: " ;
-        cin >> szBuffer ;
+        cout << "ALICE: " ;
+        cin.getline(szBuffer, 1024);
 
         int nLength = strlen( szBuffer ) ;
 
@@ -65,7 +65,7 @@ int main( )
         int nCntSend = 0 ;
         char *pBuffer = szBuffer ;
 
-        while ( ( nCntSend = send( hClientSocket, pBuffer, nLength, 0 ) != nLength ) )
+        while ( ( nCntSend = send( hClientSocket, pBuffer, 200, 0 ) != 200 ) )
         {
             if ( nCntSend == -1 )
             {
@@ -85,11 +85,11 @@ int main( )
             break ;
         }
 
-        nLength = recv( hClientSocket, szBuffer, sizeof( szBuffer ), 0 ) ;
+        nLength = recv( hClientSocket, szBuffer, 200, 0 ) ;
         if ( nLength > 0 )
         {
             szBuffer[ nLength ] = '\0' ;
-            cout << "Received " << szBuffer << " from server" << endl ;
+            cout << "BOB: " << szBuffer << endl ;
         }
     }
 

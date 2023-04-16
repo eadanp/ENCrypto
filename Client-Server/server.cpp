@@ -8,7 +8,7 @@ struct CLIENT_INFO
     struct sockaddr_in clientAddr ;
 } ;
 
-char szServerIPAddr[ ] = "10.132.2.1" ;     // Put here the IP address of the server
+char szServerIPAddr[ ] = "10.0.0.143" ;     // Put here the IP address of the server
 int nServerPort = 5050 ;                    // The server port that will be used by
                                             // clients to talk with the server
 
@@ -127,14 +127,14 @@ BOOL WINAPI ClientThread( LPVOID lpData )
     CLIENT_INFO *pClientInfo = ( CLIENT_INFO * ) lpData ;
     char szBuffer[ 1024 ] ;
     int nLength ;
-
-    while ( 1 )
+    cout << "Use Ctrl + C to end chat" << endl;
+    while ( strcmp( szBuffer, "QUIT" ) != 0 )
     {
-        nLength = recv( pClientInfo -> hClientSocket, szBuffer, sizeof( szBuffer ), 0 ) ;
+        nLength = recv( pClientInfo -> hClientSocket, szBuffer, 200, 0 ) ;
         if ( nLength > 0 )
         {
             szBuffer[ nLength ] = '\0' ;
-            cout << "Received " << szBuffer << " from " << inet_ntoa( pClientInfo -> clientAddr . sin_addr ) << endl ;
+            cout << "ALICE: " << szBuffer << endl ;
 
             // Convert the string to upper case and send it back, if its not QUIT
             strupr( szBuffer ) ;
@@ -146,15 +146,14 @@ BOOL WINAPI ClientThread( LPVOID lpData )
             // send( ) may not be able to send the complete data in one go.
             // So try sending the data in multiple requests
             
-            cout << "Enter the string to send (QUIT) to stop: ";
+            cout << "BOB: ";
             cin.getline(szBuffer, 1024);
             
             int nLength = strlen( szBuffer );
-            cout << endl << szBuffer << " " << nLength << endl;
             int nCntSend = 0 ;
             char *pBuffer = szBuffer ;
 
-            while ( ( nCntSend = send( pClientInfo -> hClientSocket, pBuffer, nLength, 0 ) != nLength ) )
+            while ( ( nCntSend = send( pClientInfo -> hClientSocket, pBuffer, 200, 0 ) != 200 ) )
             {
                 if ( nCntSend == -1 )
                 {
