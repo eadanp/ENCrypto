@@ -5,7 +5,7 @@
 *
 * Description: Header file for ElGamal Public-Key Encryption implememtation
 */
-
+ 
 #include <iostream>
 #include <string>
 #include <cstdlib>

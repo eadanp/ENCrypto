@@ -16,7 +16,7 @@ InfInt a = "0";
 InfInt gammma = "0";
 InfInt delta = "0";
 
-
+ 
 
 //Function to get current time
 char* whatIsTheTime(){
