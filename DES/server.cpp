@@ -10,7 +10,7 @@ struct CLIENT_INFO
 } ;
 string key = "carolina";
 string masterKey = ToBinary64(key);
-char szServerIPAddr[ ] = "10.0.0.143" ;     // Put here the IP address of the server
+char szServerIPAddr[ ] = "10.132.2.1" ;     // Put here the IP address of the server
 int nServerPort = 5050 ;                    // The server port that will be used by
                                             // clients to talk with the server
 

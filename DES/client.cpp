@@ -3,12 +3,12 @@
 #include <fstream>
 #include "des.h"
 using namespace std;
-char szServerIPAddr[ 20 ] = "10.0.0.143" ;     // Put here the IP address of the server
+char szServerIPAddr[ 20 ] = "10.132.2.1" ;     // Put here the IP address of the server
 int nServerPort = 5050 ;                    // The server port that will be used by                                            // clients to talk with the server
 
 bool InitWinSock2_0( ) ;
 
-int main( )
+int main(int argc, char **argv)
 {
     //cout << "Enter the server IP Address: " ;
     //cin >> szServerIPAddr ;
@@ -41,13 +41,13 @@ int main( )
     struct sockaddr_in serverAddr ;
 
     serverAddr . sin_family = AF_INET ;     // The address family. MUST be AF_INET
-    serverAddr . sin_addr . s_addr = inet_addr( szServerIPAddr ) ;
+    serverAddr . sin_addr . s_addr = inet_addr( argv[1] ) ;
     serverAddr . sin_port = htons( nServerPort ) ;
 
     // Connect to the server
     if ( connect( hClientSocket, ( struct sockaddr * ) &serverAddr, sizeof( serverAddr ) ) < 0 )
     {
-        cout << "Unable to connect to " << szServerIPAddr << " on port " << nServerPort << endl ;
+        cout << "Unable to connect to " << argv[1] << " on port " << nServerPort << endl ;
         closesocket( hClientSocket ) ;
         WSACleanup( ) ;
         return -1 ;
