@@ -125,7 +125,7 @@ const int SBoxes[8][4][16]=
         2,1,14,7,4,10,8,13,15,12,9,0,3,5,6,11 
     }};
 string subKeys[16] = {};
-string message = "";
+
 
 //Converts Decimal to Binary
 string DecToBin (int n){
@@ -250,6 +250,22 @@ string ToBinary64(string messeage){
     return binaryMessage;
     
 }
+//Function to convert char array message to 8 bit binary string using the bitset library and to_string() method.
+string ToBinary64(char* message){
+    string messeage(message);
+    string binaryMessage = "";
+    for(int i = 0; i < messeage.length(); i++){
+        binaryMessage += bitset<8>(messeage[i]).to_string();
+    }
+    int padding = 64 - (binaryMessage.length() % 64); // calculates how many 0s needs to be add to creates 64 bit blocks.
+    //adds the padding to the binary message.
+    if(padding != 64){
+        binaryMessage += string(padding, '0');
+    }
+    //cout << endl << endl << "the binary message is:" << binaryMessage;
+    return binaryMessage;
+    
+}
 //Converts binary string to ASCII text using Bitset
 string BinToText(string bin){
     bitset<8> bits;
@@ -359,7 +375,7 @@ string Encryption64(string block64){
 
 }
 // Function to perform ECB Mode Of Operation
-string ECB (){
+string ECB (string message){
     string encrypted = "";
     for(int i=0; i<message.length();i+=64){
         string block = message.substr(i,64);
@@ -368,10 +384,10 @@ string ECB (){
     return encrypted;
 }
 //Decryption Function
-string Decryption64(string masterKey){
+string Decryption64(string masterKey, string message){
     //Reversing subKeys order
     DecryptionSubKeyGenerator(masterKey);
-	string decrypted = ECB();
+	string decrypted = ECB(message);
     return decrypted;
 }
 //Function to organize binary string to 64bits blocks

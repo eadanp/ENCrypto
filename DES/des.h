@@ -21,6 +21,7 @@ void EncryptionSubKeyGenerator(string masterKey);
 void DecryptionSubKeyGenerator(string masterKey);
 //Function to convert plaintext message to 8 bit binary string using the bitset library and to_string() method.
 string ToBinary64(string messeage);
+string ToBinary64(char* message);
 //Converts binary string to ASCII text using Bitset
 string BinToText(string bin);
 //Function to create blocks of 64bits and apply initial permutaion on each block
@@ -36,8 +37,8 @@ string F32(string plainRight, string subKey);
 //Encryption
 string Encryption64(string block64);
 // Function to perform ECB Mode Of Operation
-string ECB ();
+string ECB (string message);
 //Decryption Function
-string Decryption64(string masterKey);
+string Decryption64(string masterKey, string message);
 //Function to organize binary string to 64bits blocks
 void Organize64(string text);
