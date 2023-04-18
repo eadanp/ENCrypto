@@ -1,5 +1,10 @@
-// RSA.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
+/*
+* Carolina Campos, Eadan Plotnizky and Naama Scandarion
+* Course:  CIS5371/CIS 4634
+* Professor: Mehrdad Nojoumian 
+*
+* Description: cpp file for RSA Public-Key Encryption implememtation
+*/
 
 #include <iostream>
 #include <string>
@@ -10,9 +15,6 @@
 #include "IntFin_lib_h.h"
 
 using namespace std;
-namespace std {
-    string to_string(const InfInt& num);
-}
 
 //Function for converting a decimal to its binary form in reverse order
 string RevDecToBin(InfInt n) {
@@ -307,14 +309,14 @@ InfInt decryption(InfInt d, InfInt encMsg, InfInt n, InfInt r) {
     cout << "unpadded decrypted msg: " << unpaddedDecMsg << "\n";
     return unpaddedDecMsg;
 }
-string ASCIIToString(string decryptedNumString) {
+/*string ASCIIToString(string decryptedNumString) {
     string cipherplain;
     for (int i = 0; i < decryptedNumString.length(); i++) {
         cipherplain += char(decryptedNumString[i]);
         cout << "letter: " << cipherplain[i] << "\n";
     }
     return cipherplain;
-}
+}*/
 
 int main()
 {
