@@ -160,43 +160,6 @@ InfInt gcd(InfInt a, InfInt b)
     }
     return result; // return gcd of a and b
 }
-// Function for extended Euclidean Algorithm
-/*InfInt gcdExtended(InfInt a, InfInt b, InfInt* x, InfInt* y)
-{
-
-    // Base CaseRe
-    if (a == 0) {
-        *x = 0, * y = 1;
-        return b;
-    }
-
-    // To store results of recursive call
-    InfInt x1, y1;
-    InfInt gcd = gcdExtended(b % a, a, &x1, &y1);
-
-    // Update x and y using results of recursive
-    // call
-    *x = y1 - (b / a) * x1;
-    *y = x1;
-
-    return gcd;
-}
-// Function to find modulo inverse of a
-InfInt modInverse(InfInt A, InfInt M)
-{
-    InfInt x, y;
-    InfInt g = gcdExtended(A, M, &x, &y);
-    if (g != 1)
-        cout << "Inverse doesn't exist";
-    else {
-
-        // m is added to handle negative x
-        InfInt res = (x % M + M) % M;
-        //cout << "Modular multiplicative inverse is " << res;
-        return res;
-    }
-}
-*/
 InfInt division(InfInt a, InfInt b) {
     InfInt result;
     while (a > 0) {
@@ -207,17 +170,7 @@ InfInt division(InfInt a, InfInt b) {
     return result;
 }
 InfInt modInverse(InfInt e, InfInt n) {
-    /*InfInt newE = pow(e, -1);
-    InfInt r = e;
-    InfInt s;
-    InfInt newN;
-    //extended euclidean
-    while (r != 1) {
-        s = division(n, r);
-        newN = 
-        r = n % e;
-    }
-    return r;*/
+    //extended euclidean algorithm
     InfInt b = e;
     InfInt a = n;
     InfInt d;
@@ -260,6 +213,7 @@ InfInt modInverse(InfInt e, InfInt n) {
     cout << "x: " << x << "\n";
     cout << "y: " << y << "\n";
     cout << "d: " << d << "\n";
+    //returns coefficient that is inverse of e as+bt congruent 1
     InfInt newX = e + x;
     cout << "inverse: " << newX << "\n";
     return newX;
@@ -271,49 +225,87 @@ InfInt generateE(InfInt p, InfInt q) {
     InfInt e;
     InfInt On = (p - 1) * (q - 1);
     InfInt n = p * q;
-    while (gcde != 1) {
+    bool primeOrNah = false;
+    while (gcde != 1 && primeOrNah == false) {
         e = randomGenerator(On, 1);
         gcde = gcd(e, On);
+        primeOrNah = millerRabin(e, 10);
     }
     return e;
+}
+InfInt paddingMsg(InfInt decMsg, InfInt r) {
+    string deciMsg = decMsg.toString();
+    //generate random number of 64 bit length
+    string strR = r.toString();
+    string padding = "002" + strR + "0";
+    cout << "padding: " << padding << "\n";
+    deciMsg.insert(0, padding);
+    InfInt paddedMsg = deciMsg;
+    return paddedMsg;
+}
+InfInt unpaddingMsg(InfInt decrMsg, InfInt r) {
+    string decrStringMsg = decrMsg.toString();
+    int numOfRDigits = r.numberOfDigits();
+    string strR = r.toString();
+    int length = numOfRDigits + 2;
+    decrStringMsg.erase(0, length);
+    InfInt unpaddedMsg = decrStringMsg;
+    return unpaddedMsg;
+}
+//Function to generate a random prime number of N bit 
+InfInt PrimeNumberGenerator(int bitsize) {
+    InfInt oddInt;
+    do {
+        oddInt = randomGenerator(bitsize);
+    } while (millerRabin(oddInt, 10) == 0);
+    return oddInt;
+}
+//pq[p, q]
+vector<InfInt> generatePandQ() {
+    InfInt p = PrimeNumberGenerator(215);
+    InfInt q = PrimeNumberGenerator(215);
+    vector<InfInt> pq;
+    pq.push_back(p);
+    pq.push_back(q);
+    return pq;
+}
+InfInt generateN(InfInt p, InfInt q) {
+    return p * q;
 }
 vector<InfInt> getPublicKey(InfInt p, InfInt q) {
     //message size is bound by n-1
     InfInt n = p * q;
     //find e
-    //InfInt e = generateE(p, q);
-    InfInt e = 1753;
-    InfInt gcdFactor = (p - 1) * (q - 1);
-    bool primeOrNah = false;
-    InfInt gcdv = 0;
-    while (primeOrNah == false && gcdv != 1) {
-        primeOrNah = millerRabin(e, 10);
-        gcdv = gcd(e, gcdFactor);
-    }
+    InfInt e = generateE(p, q);
     vector<InfInt> publicKey;
-    //n = 3127;
-    e = 1753;
+    //can use this value for faster running
+    //InfInt e = 65537;
     publicKey.push_back(n);
     publicKey.push_back(e);
     return publicKey;
 }
 //publicKey[n, e]
-InfInt encryption(vector<InfInt> publicKey, InfInt decMsg) {
+InfInt encryption(vector<InfInt> publicKey, InfInt decMsg, InfInt r) {
     InfInt n = publicKey[0];
     InfInt e = publicKey[1];
-    InfInt cipherText = SquareAndMultiply(decMsg, e, n)%n;
+    InfInt paddedDecMsg = paddingMsg(decMsg, r);
+    cout << "padded: " << paddedDecMsg << "\n";
+    InfInt cipherText = SquareAndMultiply(paddedDecMsg, e, n)%n;
     return cipherText;
 }
 
-InfInt getPrivateKey(InfInt e, InfInt n) {
-    InfInt d =  modInverse(n, e);
+InfInt getPrivateKey(InfInt e, InfInt p, InfInt q) {
+    InfInt On = (p-1)*(q-1);
+    InfInt d =  modInverse(On, e);
     return d;
 }
-InfInt decryption(InfInt d, InfInt encMsg, InfInt n) {
+InfInt decryption(InfInt d, InfInt encMsg, InfInt n, InfInt r) {
     //generate d by finding multiplicative inverse of e
     //by doing extended euclidean alg
     InfInt decrypedNum =SquareAndMultiply(encMsg, d, n)%n;
-    return decrypedNum;
+    InfInt unpaddedDecMsg = unpaddingMsg(decrypedNum, r);
+    cout << "unpadded decrypted msg: " << unpaddedDecMsg << "\n";
+    return unpaddedDecMsg;
 }
 string ASCIIToString(string decryptedNumString) {
     string cipherplain;
@@ -326,34 +318,40 @@ string ASCIIToString(string decryptedNumString) {
 
 int main()
 {
-   /* InfInt a = 1753;
-    InfInt b = 3016;
-    cout << (a * b) % 3157 << "\n";*/
-
     cout << "Welcome to RSA Encryption\n";
     string msg;
-    InfInt p = 8039;
-    InfInt q = 8011;
-    InfInt On = (p - 1) * (q - 1);
-    InfInt n = p * q;
-    cout << "Enter a message to encrypt\n";
+    cout << "Enter a key to encrypt\n";
     cin >> msg;
-    //msg = "HI";
+    //msg = "CAROLINA";
     InfInt decMsg = convertToASCII(msg);
     cout << "decMSG: " << decMsg << "\n";
+    InfInt r = randomGenerator(64);
+    //InfInt unpaddedDecMsg = unpaddingMsg(paddedDecMsg, r);
+    //cout << "unpadded: " << unpaddedDecMsg << "\n";
+    //generate large p and q
+    vector<InfInt> pq = generatePandQ();
+    InfInt p = pq[0];
+    cout << "p: " << p << "\n";
+    InfInt q = pq[1];
+    cout << "q: " << q << "\n";
+    //InfInt p = "3120024110683264947007910858022488502197";
+    //InfInt q = "1756653271639622701011982777775599094339";
+    InfInt On = (p - 1) * (q - 1);
+    InfInt n = p * q;
+    
     vector<InfInt> publicKey = getPublicKey(p, q);
     //public key[n, e]
     cout << "e: " << publicKey[1] << "\n";
     cout << "n: " << publicKey[0] << "\n";
     cout << "On: " << On << "\n";
-    InfInt encMsg = encryption(publicKey, decMsg);
+    InfInt encMsg = encryption(publicKey, decMsg, r);
     cout << "encMsg: " << encMsg;
-    InfInt privateKey = getPrivateKey(publicKey[1], On);
+    InfInt privateKey = getPrivateKey(publicKey[1], p, q);
     cout << "d: " << privateKey << "\n";
-    InfInt decrypedNum = decryption(privateKey, encMsg, n);
+    InfInt decrypedNum = decryption(privateKey, encMsg, n, r);
     cout << "decrypted num: " << decrypedNum << "\n";
-    string decryptedString = decrypedNum.toString();
-    string decryptedString = ASCIIToString(decryptedString);
+    /*string decryptedString = decrypedNum.toString();
+    string decryptedString = ASCIIToString(decryptedString);*/
     return 0;
 }
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
