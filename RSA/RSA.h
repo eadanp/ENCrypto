@@ -63,7 +63,7 @@ InfInt paddingMsg(InfInt decMsg, InfInt r);
 InfInt unpaddingMsg(InfInt decrMsg, InfInt r);
 
 //Function to generate p and q
-vector<InfInt> generatePandQ();
+vector<InfInt> generatePandQ(); 
 
 //Function to generate n
 InfInt generateN(InfInt p, InfInt q);
