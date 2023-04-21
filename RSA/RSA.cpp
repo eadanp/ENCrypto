@@ -1,10 +1,5 @@
-/*
-* Carolina Campos, Eadan Plotnizky and Naama Scandarion
-* Course:  CIS5371/CIS 4634
-* Professor: Mehrdad Nojoumian 
-*
-* Description: cpp file for RSA Public-Key Encryption implememtation
-*/
+// RSA.cpp : This file contains the 'main' function. Program execution begins and ends there.
+//
 
 #include <iostream>
 #include <string>
@@ -15,6 +10,9 @@
 #include "IntFin_lib_h.h"
 
 using namespace std;
+namespace std {
+    string to_string(const InfInt& num);
+}
 
 //Function for converting a decimal to its binary form in reverse order
 string RevDecToBin(InfInt n) {
@@ -172,7 +170,17 @@ InfInt division(InfInt a, InfInt b) {
     return result;
 }
 InfInt modInverse(InfInt e, InfInt n) {
-    //extended euclidean algorithm
+    /*InfInt newE = pow(e, -1);
+    InfInt r = e;
+    InfInt s;
+    InfInt newN;
+    //extended euclidean
+    while (r != 1) {
+        s = division(n, r);
+        newN = 
+        r = n % e;
+    }
+    return r;*/
     InfInt b = e;
     InfInt a = n;
     InfInt d;
@@ -215,7 +223,6 @@ InfInt modInverse(InfInt e, InfInt n) {
     cout << "x: " << x << "\n";
     cout << "y: " << y << "\n";
     cout << "d: " << d << "\n";
-    //returns coefficient that is inverse of e as+bt congruent 1
     InfInt newX = e + x;
     cout << "inverse: " << newX << "\n";
     return newX;
@@ -235,24 +242,28 @@ InfInt generateE(InfInt p, InfInt q) {
     }
     return e;
 }
-InfInt paddingMsg(InfInt decMsg, InfInt r) {
-    string deciMsg = decMsg.toString();
-    //generate random number of 64 bit length
-    string strR = r.toString();
-    string padding = "002" + strR + "0";
-    cout << "padding: " << padding << "\n";
-    deciMsg.insert(0, padding);
-    InfInt paddedMsg = deciMsg;
-    return paddedMsg;
+//generate public key from p and q
+vector<InfInt> getPublicKey(InfInt p, InfInt q) {
+    //message size is bound by n-1
+    InfInt n = p * q;
+    //find e
+   // InfInt e = generateE(p, q);
+    InfInt r = randomGenerator(64);
+    vector<InfInt> publicKey;
+    //can use this value for faster running
+    InfInt e = 65537;
+    publicKey.push_back(n);
+    publicKey.push_back(e);
+    publicKey.push_back(r);
+    return publicKey;
 }
-InfInt unpaddingMsg(InfInt decrMsg, InfInt r) {
-    string decrStringMsg = decrMsg.toString();
-    int numOfRDigits = r.numberOfDigits();
-    string strR = r.toString();
-    int length = numOfRDigits + 2;
-    decrStringMsg.erase(0, length);
-    InfInt unpaddedMsg = decrStringMsg;
-    return unpaddedMsg;
+string ASCIIToString(string decryptedNumString) {
+    string cipherplain;
+    for (int i = 0; i < decryptedNumString.length(); i++) {
+        cipherplain += char(decryptedNumString[i]);
+        cout << "letter: " << cipherplain[i] << "\n";
+    }
+    return cipherplain;
 }
 //Function to generate a random prime number of N bit 
 InfInt PrimeNumberGenerator(int bitsize) {
@@ -271,98 +282,84 @@ vector<InfInt> generatePandQ() {
     pq.push_back(q);
     return pq;
 }
+//pad plaintext
+InfInt paddingMsg(InfInt decMsg, InfInt r) {
+    string deciMsg = decMsg.toString();
+    //generate random number of 64 bit length
+    string strR = r.toString();
+    string padding = "002" + strR + "0";
+    cout << "padding: " << padding << "\n";
+    deciMsg.insert(0, padding);
+    InfInt paddedMsg = deciMsg;
+    return paddedMsg;
+}
+//unpad decrypted message
+InfInt unpaddingMsg(InfInt decrMsg, InfInt r) {
+    string decrStringMsg = decrMsg.toString();
+    int numOfRDigits = r.numberOfDigits();
+    string strR = r.toString();
+    int length = numOfRDigits + 2;
+    decrStringMsg.erase(0, length);
+    InfInt unpaddedMsg = decrStringMsg;
+    return unpaddedMsg;
+}
+//multiply p and q
 InfInt generateN(InfInt p, InfInt q) {
     return p * q;
 }
-vector<InfInt> getPublicKey(InfInt p, InfInt q) {
-    //message size is bound by n-1
-    InfInt n = p * q;
-    //find e
-    InfInt e = generateE(p, q);
-    vector<InfInt> publicKey;
-    //can use this value for faster running
-    //InfInt e = 65537;
-    publicKey.push_back(n);
-    publicKey.push_back(e);
-    return publicKey;
-}
-//publicKey[n, e]
-InfInt encryption(vector<InfInt> publicKey, InfInt decMsg, InfInt r) {
-    InfInt n = publicKey[0];
-    InfInt e = publicKey[1];
-    InfInt paddedDecMsg = paddingMsg(decMsg, r);
-    cout << "padded: " << paddedDecMsg << "\n";
-    InfInt cipherText = SquareAndMultiply(paddedDecMsg, e, n)%n;
-    return cipherText;
-}
-
+/*void ASCIIToString(InfInt decrNum) {
+    string decryptedText;
+    string letter;
+    for (int i = 0; i < decrNum.size(); i++) {
+        letter += decrNum.digitAt(i);
+    }
+}*/
+//finds d which is inverse of e mod phi
 InfInt getPrivateKey(InfInt e, InfInt p, InfInt q) {
-    InfInt On = (p-1)*(q-1);
-    InfInt d =  modInverse(On, e);
+    InfInt On = (p - 1) * (q - 1);
+    InfInt d = modInverse(On, e);
     return d;
 }
 InfInt decryption(InfInt d, InfInt encMsg, InfInt n, InfInt r) {
     //generate d by finding multiplicative inverse of e
     //by doing extended euclidean alg
-    InfInt decrypedNum =SquareAndMultiply(encMsg, d, n)%n;
+    InfInt decrypedNum = SquareAndMultiply(encMsg, d, n) % n;
+    cout << "decrypted num: " << decrypedNum;
     InfInt unpaddedDecMsg = unpaddingMsg(decrypedNum, r);
-    cout << "unpadded decrypted msg: " << unpaddedDecMsg << "\n";
+    cout << "unpadded Decrpyted: " << unpaddedDecMsg;
     return unpaddedDecMsg;
 }
-/*string ASCIIToString(string decryptedNumString) {
-    string cipherplain;
-    for (int i = 0; i < decryptedNumString.length(); i++) {
-        cipherplain += char(decryptedNumString[i]);
-        cout << "letter: " << cipherplain[i] << "\n";
+//publicKey[n, e]
+//takes string msg, finds decimal value,  pads it, and encrypts it
+InfInt encryption(vector<InfInt> publicKey, string msg) {
+    //take binary and convert to decimal
+    string num;
+    InfInt r = publicKey[2];
+    for (int i = 0; i < 8; i++) {
+        num += binaryToDecimal(msg.substr(i * 8, 8)).toString();
     }
-    return cipherplain;
-}*/
-
-int main()
-{
-    cout << "Welcome to RSA Encryption\n";
-    string msg;
-    cout << "Enter a key to encrypt\n";
-    cin >> msg;
-    //msg = "CAROLINA";
-    InfInt decMsg = convertToASCII(msg);
-    cout << "decMSG: " << decMsg << "\n";
-    InfInt r = randomGenerator(64);
-    //InfInt unpaddedDecMsg = unpaddingMsg(paddedDecMsg, r);
-    //cout << "unpadded: " << unpaddedDecMsg << "\n";
-    //generate large p and q
-    vector<InfInt> pq = generatePandQ();
-    InfInt p = pq[0];
-    cout << "p: " << p << "\n";
-    InfInt q = pq[1];
-    cout << "q: " << q << "\n";
-    //InfInt p = "3120024110683264947007910858022488502197"; 
-    //InfInt q = "1756653271639622701011982777775599094339";
-    InfInt On = (p - 1) * (q - 1);
-    InfInt n = p * q;
-    
-    vector<InfInt> publicKey = getPublicKey(p, q);
-    //public key[n, e]
-    cout << "e: " << publicKey[1] << "\n";
-    cout << "n: " << publicKey[0] << "\n";
-    cout << "On: " << On << "\n";
-    InfInt encMsg = encryption(publicKey, decMsg, r);
-    cout << "encMsg: " << encMsg;
-    InfInt privateKey = getPrivateKey(publicKey[1], p, q);
-    cout << "d: " << privateKey << "\n";
-    InfInt decrypedNum = decryption(privateKey, encMsg, n, r);
-    cout << "decrypted num: " << decrypedNum << "\n";
-    /*string decryptedString = decrypedNum.toString();
-    string decryptedString = ASCIIToString(decryptedString);*/
-    return 0;
+    cout << "binaryToDecimal: " << num <<"\n";
+    InfInt decMsg = num;
+    InfInt paddedDecMsg = paddingMsg(decMsg, r);
+    cout << "padded: " << paddedDecMsg << "\n";
+    InfInt n = publicKey[0];
+    InfInt e = publicKey[1];
+    InfInt cipherText = SquareAndMultiply(paddedDecMsg, e, n) % n;
+    return cipherText;
 }
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
+//How to use:
+//first generate p and q
+// vector<InfInt> pq = generatePandQ();
+// InfInt p = pq[0];
+// InfInt q = pq[1];
+//generate n
+// InfInt n = p*q;
+//create public key vector publicKey[n, e]
+// vector<InfInt> publicKey = getPublicKey(p, q);
+//ENCRYPTION
+// InfInt encMsg = encryption(publicKey, msg);
+//get private key
+// InfInt privateKey = getPrivateKey(publicKey[1], p, q);
+//DECRYPTION
+// InfInt decrypedNum = decryption(privateKey, encMsg, n, publicKey[2]);
 
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
