@@ -1,11 +1,8 @@
 #include <winsock2.h>
 #include <iostream>
 #include <fstream>
-#include "3des.h"
+#include "des.h"
 using namespace std;
-string key1 = "carolina";
-string key2 = "qwertyui";
-string key3 = "poiuytre";
 char szServerIPAddr[ 20 ] = "10.132.2.1" ;     // Put here the IP address of the server
 int nServerPort = 5050 ;                    // The server port that will be used by                                            // clients to talk with the server
 
@@ -63,7 +60,10 @@ int main(int argc, char **argv)
     {
         cout << "ALICE: " ;
         cin.getline(szBuffer, 1024);
-        strcpy(szBuffer, tripleDesEncryption(szBuffer, key1, key2, key3).c_str());
+        string masterKey = "carolina";
+        masterKey = ToBinary64(masterKey);
+        EncryptionSubKeyGenerator(masterKey);
+        strcpy(szBuffer, ECB(ToBinary64(szBuffer)).c_str());
         
         fout << "ALICE: " << szBuffer << endl;
         
@@ -74,7 +74,7 @@ int main(int argc, char **argv)
         int nCntSend = 0 ;
         char *pBuffer = szBuffer ;
 
-        while ( ( nCntSend = send( hClientSocket, pBuffer, 1024, 0 ) != 1024 ) )
+        while ( ( nCntSend = send( hClientSocket, pBuffer, 200, 0 ) != 200 ) )
         {
             if ( nCntSend == -1 )
             {
@@ -94,13 +94,13 @@ int main(int argc, char **argv)
             break ;
         }
 
-        nLength = recv( hClientSocket, szBuffer, 1024, 0 ) ;
+        nLength = recv( hClientSocket, szBuffer, 200, 0 ) ;
         if ( nLength > 0 )
         {
             szBuffer[ nLength ] = '\0' ;
             fout << "BOB: " << szBuffer << endl;
             string str(szBuffer);
-            strcpy(szBuffer, BinToText(tripleDesDecryption(str, key1, key2, key3)).c_str());
+            strcpy(szBuffer, BinToText(Decryption64(masterKey, str)).c_str());
             cout << "BOB: " << szBuffer << endl ;
         }
         

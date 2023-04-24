@@ -6,7 +6,7 @@
 * Description: Implemented Data Encryption Standard (DES)
 */
 
-#include "3des.h"
+#include "des.h"
 
 //left shift.
 const int leftShift[16] = { 1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1 }; //vi = 1 for i ∈ {1, 2, 9, 16}; vi = 2 otherwise
@@ -125,7 +125,7 @@ const int SBoxes[8][4][16]=
         2,1,14,7,4,10,8,13,15,12,9,0,3,5,6,11 
     }};
 string subKeys[16] = {};
-string message = "";
+
 
 //Converts Decimal to Binary
 string DecToBin (int n){
@@ -394,139 +394,8 @@ string Decryption64(string masterKey, string message){
 void Organize64(string text){
     for(int i = 0; i < text.length(); i += 64){
         string block = text.substr(i, 64);
-        //cout << block << endl;  
+        cout << block << endl;  
     }
-}
-//Function to preform triple des encryption
-string tripleDesEncryption(string message ,string masterKey1, string masterKey2, string masterKey3){
-    string m = message;
-    string key1 = masterKey1;
-    string key2 = masterKey2;
-    string key3 = masterKey3;
-    /*
-    //secret message input
-    cout << endl << "Please enter your secret message: ";
-    cin.ignore();
-    getline(cin, message);
-    */
-    /*
-    //Key 1 
-    cout << endl << "Please enter your first 8 characters secret key: ";
-    cin >> masterKey1;
-    while(masterKey1.length() != 8){
-        if(masterKey1.length() != 8){
-            cout << "Your Key is not 8 characters. Please re-enter your Key: ";
-            cin >> masterKey1;
-        }
-    }       
-    */
-    key1 = ToBinary64(key1);
-
-    EncryptionSubKeyGenerator(key1);
-    m = ToBinary64(m);
-    string cipherBinary = ECB(m);
-    Organize64(cipherBinary);
-
-    m = cipherBinary;
-    /*
-    //Key 2
-    cout << endl << "Please enter your second 8 characters secret key: ";
-    cin >> masterKey2;
-    while(masterKey2.length() != 8){
-        if(masterKey2.length() != 8){
-            cout << "Your Key is not 8 characters. Please re-enter your Key: ";
-            cin >> masterKey2;
-        }
-    }   
-    */
-    key2 = ToBinary64(key2);
-    string decrypted = Decryption64(key2, m);
-
-    m = decrypted;
-    /*
-    //Key 3
-    cout << endl << "Please enter your third 8 characters secret key: ";
-    cin >> masterKey3;
-    while(masterKey3.length() != 8){
-        if(masterKey3.length() != 8){
-            cout << "Your Key is not 8 characters. Please re-enter your Key: ";
-            cin >> masterKey3;
-        }
-    }       
-    */
-    key3 = ToBinary64(key3);
-    EncryptionSubKeyGenerator(key3);
-    cipherBinary = ECB(m);
-
-    //cout << endl << endl << "the cipher binary text is: " << endl << endl;
-    Organize64(cipherBinary); 
-    //cout << cipherBinary << endl;  
-    
-    return cipherBinary;
-}
-
-//Function to preform triple des decryption
-string tripleDesDecryption(string message ,string masterKey1, string masterKey2, string masterKey3){
-    string m = message;
-    string key1 = masterKey1;
-    string key2 = masterKey2;
-    string key3 = masterKey3;
-    /*
-    //secret message input
-    cout << endl << "Please enter your binary cipher string: ";
-    cin.ignore();
-    getline(cin, message);
-
-    //Key 3
-    cout << endl << "Please enter your third 8 characters secret key: ";
-    cin >> masterKey3;
-    while(masterKey3.length() != 8){
-        if(masterKey3.length() != 8){
-            cout << "Your Key is not 8 characters. Please re-enter your Key: ";
-            cin >> masterKey3;
-        }
-    }
-    */   
-    key3 = ToBinary64(key3);
-    string decrypted = Decryption64(key3, m);
-
-    //Key 2
-    m = decrypted;
-    /*
-    cout << endl << "Please enter your second 8 characters secret key: ";
-    cin >> masterKey2;
-    while(masterKey2.length() != 8){
-        if(masterKey2.length() != 8){
-            cout << "Your Key is not 8 characters. Please re-enter your Key: ";
-            cin >> masterKey2;
-        }
-    } 
-    */      
-    key2 = ToBinary64(key2);
-    EncryptionSubKeyGenerator(key2);
-    string cipherBinary = ECB(m);
-    Organize64(cipherBinary);
-
-    m = cipherBinary;
-
-    //Key 1
-    /*
-    cout << endl << "Please enter your first 8 characters secret key: ";
-    cin >> masterKey1;
-    while(masterKey1.length() != 8){
-        if(masterKey1.length() != 8){
-            cout << "Your Key is not 8 characters. Please re-enter your Key: ";
-            cin >> masterKey1;
-        }
-    }     
-    */
-    key1 = ToBinary64(key1);
-
-    decrypted = Decryption64(key1, m);
-    //cout<< endl << "Plain text: "<< BinToText(decrypted) << endl << endl;
-
-    return decrypted;
-
 }
 
 

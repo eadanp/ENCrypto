@@ -42,7 +42,3 @@ string ECB (string message);
 string Decryption64(string masterKey, string message);
 //Function to organize binary string to 64bits blocks
 void Organize64(string text);
-//Function to preform triple des encryption
-string tripleDesEncryption(string message, string masterKey1, string masterKey2, string masterKey3);
-//Function to preform triple des decryption
-string tripleDesDecryption(string message, string masterKey1, string masterKey2, string masterKey3);
