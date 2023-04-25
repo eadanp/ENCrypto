@@ -124,8 +124,279 @@ const int SBoxes[8][4][16]=
         7,11,4,1,9,12,14,2,0,6,10,13,15,3,5,8, 
         2,1,14,7,4,10,8,13,15,12,9,0,3,5,6,11 
     }};
+string subKeys[16] = {};
+string message = "";
 
+//Converts Decimal to Binary
+string DecToBin (int n){
 
+    string binary = "";
+    string ordered = "";
+    int i = 0;
+    while(n > 0){
+        binary = to_string(n % 2) + binary;
+        n = n / 2;
+        i++;
+    }
+    while(binary.length() < 4){
+		binary = "0" + binary;
+	}
+    return binary;
+}
+//Function to shift array n positions to the right
+string RightShift(string key, int shift){
+    string shifted = "";
+    if(shift == 1){
+        shifted += key[key.length()-1];
+        for(int i = 0; i < key.length() - 1; i++){
+            shifted += key[i];
+        }
+    }
+    else if(shift == 2){
+        shifted += key[key.length() - 2];
+        shifted += key[key.length() - 1];
+        for(int i = 0; i < key.length() - 2; i++){
+            shifted += key[i];
+        }
+    }
+    //cout << endl << "shifting by " << shift;
+    return shifted;
+
+}
+//Function to shift array n positions to the left
+string LeftShift(string key, int shift){
+    string shifted = "";
+    if(shift == 1){
+        for(int i = 1; i < key.length(); i++){
+            shifted += key[i];
+        }
+        shifted += key[0];
+    }
+    else if(shift == 2){
+        for(int i = 2; i < key.length(); i++){
+            shifted += key[i];
+        }
+        shifted += key[0];
+        shifted += key[1];
+    }
+    //cout << endl << "shifting by " << shift;
+    return shifted;
+
+}  
+//Function to create 16 48bit encryption subkeys
+void EncryptionSubKeyGenerator(string masterKey){
+    //compress 64bit key to 56bit key
+    string permkey = "";
+    for(int i = 0; i < 56; i++){ 
+		permkey += masterKey[PC1[i]-1]; 
+    } 
+    //creating subkeys
+    string leftSide = permkey.substr(0,28);
+    string rightSide = permkey.substr(28, 28);
+    for(int i = 0; i < 16; i++){
+        leftSide = LeftShift(leftSide, leftShift[i]);
+        rightSide = LeftShift(rightSide, leftShift[i]);
+        string prePermute = leftSide + rightSide;
+        string roundKey = "";
+        for(int j = 0; j < 48; j++){ 
+		    roundKey += prePermute[PC2[j]-1]; 
+        }
+        subKeys[i] = roundKey;
+        //cout << endl << endl << "Subkey " << i + 1 << ": " << subKeys[i];
+    }
+}
+void DecryptionSubKeyGenerator(string masterKey){
+    //compress 64bit key to 56bit key
+    string permkey = "";
+    for(int i = 0; i < 56; i++){ 
+		permkey += masterKey[PC1[i]-1]; 
+    } 
+    //creating subkeys
+    string leftSide = permkey.substr(0,28);
+    string rightSide = permkey.substr(28, 28);
+    
+    string prePermute = leftSide + rightSide;
+    string roundKey = "";
+    for(int j = 0; j < 48; j++){ 
+		roundKey += prePermute[PC2[j]-1]; 
+    }
+    subKeys[0] = roundKey;
+    //cout << endl << endl << "Subkey " << 0 + 1 << ": " << subKeys[0];
+    for(int i = 1; i < 16; i++){
+        leftSide = RightShift(leftSide, rightShift[i]);
+        rightSide = RightShift(rightSide, rightShift[i]);
+        prePermute = leftSide + rightSide;
+        roundKey = "";
+        for(int j = 0; j < 48; j++){ 
+		    roundKey += prePermute[PC2[j]-1]; 
+        }
+        subKeys[i] = roundKey;
+        //cout << endl << endl << "Subkey " << i + 1 << ": " << subKeys[i];
+    }
+}
+
+//Function to convert plaintext message to 8 bit binary string using the bitset library and to_string() method.
+string ToBinary64(string messeage){
+    string binaryMessage = "";
+    for(int i = 0; i < messeage.length(); i++){
+        binaryMessage += bitset<8>(messeage[i]).to_string();
+    }
+    int padding = 64 - (binaryMessage.length() % 64); // calculates how many 0s needs to be add to creates 64 bit blocks.
+    //adds the padding to the binary message.
+    if(padding != 64){
+        binaryMessage += string(padding, '0');
+    }
+    //cout << endl << endl << "the binary message is:" << binaryMessage;
+    return binaryMessage;
+    
+}
+//Function to convert char array message to 8 bit binary string using the bitset library and to_string() method.
+string ToBinary64(char* message){
+    string messeage(message);
+    string binaryMessage = "";
+    for(int i = 0; i < messeage.length(); i++){
+        binaryMessage += bitset<8>(messeage[i]).to_string();
+    }
+    int padding = 64 - (binaryMessage.length() % 64); // calculates how many 0s needs to be add to creates 64 bit blocks.
+    //adds the padding to the binary message.
+    if(padding != 64){
+        binaryMessage += string(padding, '0');
+    }
+    //cout << endl << endl << "the binary message is:" << binaryMessage;
+    return binaryMessage;
+    
+}
+//Converts binary string to ASCII text using Bitset
+string BinToText(string bin){
+    bitset<8> bits;
+    string ascii_string;
+    for (size_t i = 0; i < bin.size(); i += 8) {
+    bits = bitset<8>(bin.substr(i, 8));
+    char c = char(bits.to_ulong());
+    ascii_string += c;
+    }
+    return ascii_string;
+}
+//Function to create blocks of 64bits and apply initial permutaion on each block
+string InitialPermutation(string block64){
+    
+    string permutedBlocks = "";
+    string permuted = "";
+    for(int i = 0; i < block64.length(); i  += 64){
+        string block = block64.substr(i, 64);
+        
+        for(int j = 0; j < 64; j++){
+            permuted += block[IP[j]-1];
+        }
+        
+    }
+   // cout << endl << endl << "Initial Permutaion: " << permuted;
+    return permuted;
+    
+}
+//Encryption Functions:
+
+//Expansion Function
+string Expansion(string binaryText){
+    string expanded ="";
+    for(int i = 0; i < 48; i++){
+        expanded += binaryText[EP[i]-1];
+    }
+    //cout << endl << endl << "expanded string: " << expanded;
+    return expanded;
+}
+//XOR Function
+string XOR(string a, string b){
+    string result = "";
+    int size = a.size();
+    for(int i =0; i < size; i++){
+        if(a[i] != b[i]){
+            result += "1";
+        }
+        else{
+            result += "0";
+        }
+    }
+    return result;
+}
+//f Function
+string F32(string plainRight, string subKey){
+    string permSbox = "";
+    string expanded = Expansion(plainRight);
+    string xored = XOR(expanded, subKey);
+    int sBoxed;
+    
+    string binary = "";
+    //XOR function call
+    
+    
+    for (int j = 0; j < 8; j++)
+    {
+            //S-BOXes
+            string padded = xored.substr(j*6,1) + xored.substr(j*6 + 5,1);
+            string middle = xored.substr(j*6 + 1,1) + xored.substr(j*6 + 2,1) + xored.substr(j*6 + 3,1) + xored.substr(j*6 + 4,1); 
+            int padding = stoi(padded, nullptr, 2);//to convert binary to decimal
+            //cout << endl << "row is: " << padding << endl;
+            int middleVal = stoi(middle, nullptr, 2);//to convert binary to decimal
+            //cout << endl << "col is: " << middleVal << endl;
+            sBoxed = (SBoxes[j][padding][middleVal]);
+            //cout << endl << endl << "SBox location is: " << sBoxed;
+            binary += DecToBin(sBoxed);
+            //cout << endl << endl << binary;
+    }
+    //cout << endl << endl << " after SBoxes the string is: " << binary;
+    //permutation
+    for(int k=0; k<32 ;k++){
+        permSbox += binary[PT[k]-1];
+    }   
+   // cout << endl << endl << "the SBox after permutation is: " << permSbox;
+    return permSbox;
+}
+//Encryption
+string Encryption64(string block64){
+    
+    string permuted = InitialPermutation(block64);
+    string left = permuted.substr(0,32);
+    string right = permuted.substr(32,32);
+    string temp = "";
+    for(int i = 0; i < 16; i++){
+        temp = right;
+        right = XOR(F32(right, subKeys[i]), left);
+        left = temp;
+    }
+    string preCipher = right + left;
+    string cipherBinary = "";
+    for(int i = 0; i < 64; i++){
+        cipherBinary += preCipher[REV_IP[i]-1];
+    }
+    //cout << endl << endl << "the cipher binary text is: " << cipherBinary;
+    
+    return cipherBinary;
+
+}
+// Function to perform ECB Mode Of Operation
+string ECB (string message){
+    string encrypted = "";
+    for(int i=0; i<message.length();i+=64){
+        string block = message.substr(i,64);
+        encrypted += Encryption64(block);  
+    }
+    return encrypted;
+}
+//Decryption Function
+string Decryption64(string masterKey, string message){
+    //Reversing subKeys order
+    DecryptionSubKeyGenerator(masterKey);
+	string decrypted = ECB(message);
+    return decrypted;
+}
+//Function to organize binary string to 64bits blocks
+void Organize64(string text){
+    for(int i = 0; i < text.length(); i += 64){
+        string block = text.substr(i, 64);
+        //cout << block << endl;  
+    }
+}
 //Function to preform triple des encryption
 string tripleDesEncryption(string message ,string masterKey1, string masterKey2, string masterKey3){
     string m = message;

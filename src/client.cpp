@@ -6,9 +6,21 @@ using namespace std;
 int main(int argc, char **argv){
 
     string ip = argv[1];
-    string des = "..\Schemes\DES\client.exe " + ip;
-    if(argv[2] == "des" || argv[2] == "DES"){
+    string symmetric = argv[2];
+    string asymmetric = argv[3];
+    string des = "DESclient.exe ";
+    des += ip;
+    des += " ";
+    des += asymmetric;
+    string tripleDes = "3DESclient.exe ";
+    tripleDes += ip;
+    tripleDes += " ";
+    tripleDes += asymmetric;
+    if(symmetric == "des" || symmetric == "DES"){
         system(des.c_str());
+    } 
+    else {
+        system(tripleDes.c_str());
     }
 
     return 0;
