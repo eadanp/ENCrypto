@@ -22,6 +22,6 @@ Windows operation system - The program includes socket programming with WINSOCK 
 1. open Terminal
 2. make sure you are in the right directory
 
-3. type `./mainServer.exe <ip address> <des/3des>` to run the server executable through the terminal.
+3. type `./mainServer.exe <ip address> <des/3des> <rsa/elgamal>` to run the server executable through the terminal.
 4. make sure to wait for the RSA keys to generate before executing the client (will display message)
-5. type `./mainClient.exe <ip address> <des/3des>` to run the client executable through the terminal.
+5. type `./mainClient.exe <ip address> <des/3des> <rsa/elgamal>` to run the client executable through the terminal.
