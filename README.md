@@ -8,7 +8,7 @@
 
 ENCrypto Chat is a secure communication program designed for two users to exchange messages on an encrypted server. The program offers a variety of encryption schemes, including DES, Triple DES, RSA, and El Gamal, which users can choose from based on their preferences and needs.
 
-**Current version doesn't let you choose the asymetric encryption. The defult asymetric encryption is set to RSA**
+**Current version doesn't let you choose the asymmetric encryption. The defult asymmetric encryption is set to RSA**
 
 **To run the program through VSCode make sure you have a GCC compiler.**
 
