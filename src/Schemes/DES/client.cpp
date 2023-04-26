@@ -2,9 +2,14 @@
 #include <iostream>
 #include <fstream>
 #include "des.h"
+#include "../RSA/RSA.h"
 using namespace std;
+
 char szServerIPAddr[ 20 ] = "10.132.2.1" ;     // Put here the IP address of the server
 int nServerPort = 5050 ;                    // The server port that will be used by                                            // clients to talk with the server
+InfInt masterKey = randomGenerator(64);
+string key = DecToBin(masterKey.toString());
+
 
 bool InitWinSock2_0( ) ;
 
@@ -56,13 +61,30 @@ int main(int argc, char **argv)
     char szBuffer[ 1024 ] = "" ;
     cout << "Type 'QUIT' and then use Ctrl + C to end program" << endl;
     ofstream fout("backend.txt");
+
+    //recieve rsa public key from server
+    int nLength = strlen( szBuffer ) ;
+    nLength = recv( hClientSocket, szBuffer, 1024, 0 ) ;
+    InfInt n = szBuffer;
+    nLength = recv( hClientSocket, szBuffer, 1024, 0 ) ;
+    InfInt e = szBuffer;
+    nLength = recv( hClientSocket, szBuffer, 1024, 0 ) ;
+    InfInt r = szBuffer;
+
+    //send encrypted des key to server
+    string encrypteKey = encryption(n, e, r, key).toString();
+    strcpy(szBuffer, encrypteKey.c_str());
+    int nCntSend = 0 ;
+    char *pBuffer = szBuffer ;
+    nCntSend = send( hClientSocket, pBuffer, 1024, 0 );
+    
     while ( strcmp( szBuffer, "QUIT" ) != 0 )
     {
+       
         cout << "ALICE: " ;
         cin.getline(szBuffer, 1024);
-        string masterKey = "carolina";
-        masterKey = ToBinary64(masterKey);
-        EncryptionSubKeyGenerator(masterKey);
+
+        EncryptionSubKeyGenerator(key);
         strcpy(szBuffer, ECB(ToBinary64(szBuffer)).c_str());
         
         fout << "ALICE: " << szBuffer << endl;
@@ -74,7 +96,7 @@ int main(int argc, char **argv)
         int nCntSend = 0 ;
         char *pBuffer = szBuffer ;
 
-        while ( ( nCntSend = send( hClientSocket, pBuffer, 200, 0 ) != 200 ) )
+        while ( ( nCntSend = send( hClientSocket, pBuffer, 1024, 0 ) != 1024 ) )
         {
             if ( nCntSend == -1 )
             {
@@ -94,13 +116,13 @@ int main(int argc, char **argv)
             break ;
         }
 
-        nLength = recv( hClientSocket, szBuffer, 200, 0 ) ;
+        nLength = recv( hClientSocket, szBuffer, 1024, 0 ) ;
         if ( nLength > 0 )
         {
             szBuffer[ nLength ] = '\0' ;
             fout << "BOB: " << szBuffer << endl;
             string str(szBuffer);
-            strcpy(szBuffer, BinToText(Decryption64(masterKey, str)).c_str());
+            strcpy(szBuffer, BinToText(Decryption64(key, str)).c_str());
             cout << "BOB: " << szBuffer << endl ;
         }
         

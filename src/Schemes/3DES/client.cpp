@@ -2,12 +2,18 @@
 #include <iostream>
 #include <fstream>
 #include "3des.h"
+#include "../RSA/RSA.h";
 using namespace std;
-string key1 = "carolina";
-string key2 = "qwertyui";
-string key3 = "poiuytre";
+
 char szServerIPAddr[ 20 ] = "10.132.2.1" ;     // Put here the IP address of the server
 int nServerPort = 5050 ;                    // The server port that will be used by                                            // clients to talk with the server
+
+InfInt masterKey1 = randomGenerator(64);
+string key1 = DecToBin(masterKey1.toString());
+InfInt masterKey2 = randomGenerator(64);
+string key2 = DecToBin(masterKey2.toString());
+InfInt masterKey3 = randomGenerator(64);
+string key3 = DecToBin(masterKey3.toString());
 
 bool InitWinSock2_0( ) ;
 
@@ -17,9 +23,6 @@ int main(int argc, char **argv)
     //cin >> szServerIPAddr ;
     //cout << "Enter the server port number: " ;
     //cin >> nServerPort ;
-    string key1 = "carolina";
-    string key2 = "qwertyui";
-    string key3 = "poiuytre";
     if ( ! InitWinSock2_0( ) )
     {
         cout << "Unable to Initialize Windows Socket environment" << WSAGetLastError( ) << endl ;
@@ -61,6 +64,32 @@ int main(int argc, char **argv)
     char szBuffer[ 1024 ] = "" ;
     cout << "Type 'QUIT' and then use Ctrl + C to end program" << endl;
     ofstream fout("backend.txt");
+
+    //recieve rsa public key from server
+    int nLength = strlen( szBuffer ) ;
+    nLength = recv( hClientSocket, szBuffer, 1024, 0 ) ;
+    InfInt n = szBuffer;
+    nLength = recv( hClientSocket, szBuffer, 1024, 0 ) ;
+    InfInt e = szBuffer;
+    nLength = recv( hClientSocket, szBuffer, 1024, 0 ) ;
+    InfInt r = szBuffer;
+
+    //send encrypted des key to server
+    string encrypteKey1 = encryption(n, e, r, key1).toString();
+    strcpy(szBuffer, encrypteKey1.c_str());
+    int nCntSend = 0 ;
+    char *pBuffer = szBuffer ;
+    nCntSend = send( hClientSocket, pBuffer, 1024, 0 );
+    string encrypteKey2 = encryption(n, e, r, key2).toString();
+    strcpy(szBuffer, encrypteKey2.c_str());
+    nCntSend = 0 ;
+    pBuffer = szBuffer ;
+    nCntSend = send( hClientSocket, pBuffer, 1024, 0 );
+    string encrypteKey3 = encryption(n, e, r, key3).toString();
+    strcpy(szBuffer, encrypteKey3.c_str());
+    nCntSend = 0 ;
+    pBuffer = szBuffer ;
+    nCntSend = send( hClientSocket, pBuffer, 1024, 0 );
     while ( strcmp( szBuffer, "QUIT" ) != 0 )
     {
         cout << "ALICE: " ;

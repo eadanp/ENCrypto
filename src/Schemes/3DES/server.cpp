@@ -2,24 +2,43 @@
 #include <iostream>
 #include <fstream>
 #include "3des.h"
+#include "../RSA/RSA.h"
+
 using namespace std;
 struct CLIENT_INFO
 {
     SOCKET hClientSocket ;
     struct sockaddr_in clientAddr ;
 } ;
-string key1 = "carolina";
-string key2 = "qwertyui";
-string key3 = "poiuytre";
+string key1 = "";
+string key2 = "";
+string key3 = "";
 char szServerIPAddr[ ] = "10.132.2.1" ;     // Put here the IP address of the server
 int nServerPort = 5050 ;                    // The server port that will be used by
                                             // clients to talk with the server
-
+//generate global variables p and q
+InfInt p;
+InfInt q;
+InfInt r;
+InfInt n;
+InfInt e;
+InfInt d;
 bool InitWinSock2_0( ) ;
 BOOL WINAPI ClientThread( LPVOID lpData ) ;
 
-int main( )
+int main(int argc, char **argv)
 {
+       vector<InfInt> pq = generatePandQ();
+       //p = "3120024110683264947007910858022488502197";
+       //q = "1756653271639622701011982777775599094339";
+        p = pq[0];
+        q = pq[1];
+        vector<InfInt> publicKey = getPublicKey(p, q);
+        n = publicKey[0];
+        e = publicKey[1];
+        r = publicKey[2];
+        d = getPrivateKey(e, p, q);
+
     if ( ! InitWinSock2_0( ) )
     {
         cout << "Unable to Initialize Windows Socket environment" << WSAGetLastError( ) << endl ;
@@ -129,6 +148,36 @@ BOOL WINAPI ClientThread( LPVOID lpData )
     CLIENT_INFO *pClientInfo = ( CLIENT_INFO * ) lpData ;
     char szBuffer[ 1024 ] ;
     int nLength ;
+
+    int nCntSend = 0 ;
+    
+    //cout << "Loading..." << endl;
+    
+    //send public key to client
+    string nString = n.toString();
+    strcpy(szBuffer, nString.c_str());
+    char *pBuffer = szBuffer ;
+    nCntSend = send( pClientInfo -> hClientSocket, pBuffer, 1024, 0 );
+    string eString = e.toString();
+    strcpy(szBuffer, eString.c_str());
+    pBuffer = szBuffer ;
+    nCntSend = send( pClientInfo -> hClientSocket, pBuffer, 1024, 0 );
+    string rString = r.toString();
+    strcpy(szBuffer, rString.c_str());
+    pBuffer = szBuffer ;
+    nCntSend = send( pClientInfo -> hClientSocket, pBuffer, 1024, 0 );
+    // Reciving the encrpted 3des key from client
+    nLength = recv( pClientInfo -> hClientSocket, szBuffer, 1024, 0 ) ;
+    string encryptedMasterKey1 = szBuffer;
+    nLength = recv( pClientInfo -> hClientSocket, szBuffer, 1024, 0 ) ;
+    string encryptedMasterKey2 = szBuffer;
+    nLength = recv( pClientInfo -> hClientSocket, szBuffer, 1024, 0 ) ;
+    string encryptedMasterKey3 = szBuffer;
+    
+    //Decrypting des key with rsa private key 
+    key1 = DecToBin(decryption(d, encryptedMasterKey1, n, r));
+    key2 = DecToBin(decryption(d, encryptedMasterKey2, n, r));
+    key3 = DecToBin(decryption(d, encryptedMasterKey3, n, r));
     cout << "Use Ctrl + C to end chat" << endl;
     
     while ( strcmp( szBuffer, "QUIT" ) != 0 )
