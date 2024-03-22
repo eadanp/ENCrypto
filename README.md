@@ -10,7 +10,7 @@ ENCrypto Chat is a secure communication program designed for two users to exchan
 
 **Current version doesn't let you choose the asymmetric encryption. The default asymmetric encryption is set to RSA**
 
-**To run the program through VSCode make sure you have a GCC compiler.**
+**To run the program make sure you have a GCC compiler.**
 
 ## Dependencies:
 InfInt.h by sercantutar - https://github.com/sercantutar/infint
